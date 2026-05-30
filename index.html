@@ -151,6 +151,8 @@ const RULE_SECTIONS = [
 ];
 
 // ── Data Loading ──
+const GITHUB_RAW = 'https://raw.githubusercontent.com/8nk9567f6c-prog/script-workstation/main/data.json';
+
 async function loadData() {
   try {
     const resp = await fetch('data.json?' + Date.now());
@@ -173,9 +175,48 @@ async function loadData() {
   return false;
 }
 
-function refreshData() {
-  localStorage.removeItem('scripter_data_cache');
-  loadData().then(() => { render(); toast('数据已刷新 ✓'); });
+async function refreshData() {
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true;
+  btn.textContent = '⏳ 正在从 GitHub 拉取...';
+
+  try {
+    const resp = await fetch(GITHUB_RAW + '?t=' + Date.now());
+    if (resp.ok) {
+      const remote = await resp.json();
+      const localVer = DATA ? DATA.version : '';
+      const remoteVer = remote.version;
+      DATA = remote;
+      document.getElementById('data-version').textContent = DATA.version;
+      document.getElementById('sync-info').innerHTML = '<span class="live">● 已联动（GitHub）</span> · 更新于 ' + DATA.updated;
+      localStorage.setItem('scripter_data_cache', JSON.stringify(DATA));
+      render();
+      toast(remoteVer !== localVer ? '已更新至 v' + remoteVer + ' ✓' : '已是最新版本 v' + remoteVer + ' ✓');
+      btn.disabled = false;
+      btn.textContent = '🔄 从 GitHub 拉取最新数据';
+      return;
+    }
+  } catch(e) {}
+
+  // Fallback: try local data.json
+  try {
+    const resp = await fetch('data.json?' + Date.now());
+    if (resp.ok) {
+      DATA = await resp.json();
+      document.getElementById('data-version').textContent = DATA.version;
+      document.getElementById('sync-info').innerHTML = '<span class="live">● 已联动</span> · 更新于 ' + DATA.updated;
+      localStorage.setItem('scripter_data_cache', JSON.stringify(DATA));
+      render();
+      toast('GitHub 连接失败，已从本地刷新 ✓');
+      btn.disabled = false;
+      btn.textContent = '🔄 从 GitHub 拉取最新数据';
+      return;
+    }
+  } catch(e) {}
+
+  btn.disabled = false;
+  btn.textContent = '🔄 从 GitHub 拉取最新数据';
+  toast('刷新失败，请检查网络 ⚠');
 }
 
 // ── Toast ──
@@ -253,8 +294,8 @@ function renderDash() {
     </div></div>`;
 
   html += `<div class="card"><h3>🔧 工具</h3>
-    <button class="btn btn-refresh btn-sm" onclick="refreshData()">🔄 从工作台同步最新数据</button>
-    <span style="font-size:11px;color:var(--sub);margin-left:8px">读取 data.json</span>
+    <button id="btn-refresh" class="btn btn-refresh btn-sm" onclick="refreshData()">🔄 从 GitHub 拉取最新数据</button>
+    <span style="font-size:11px;color:var(--sub);margin-left:8px">绕过缓存，直连 GitHub</span>
     </div>`;
 
   html += `<div class="card"><h3>📋 工作流速览</h3>`;
