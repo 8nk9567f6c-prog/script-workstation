@@ -1,5 +1,5 @@
-// Service Worker for 编剧工作台 v4.0 — offline-first PWA
-const CACHE_NAME = 'scripter-v4-' + '20260530';
+// Service Worker for 编剧工作台 v4.1 — offline-first PWA
+const CACHE_NAME = 'scripter-v4.1-' + '20260531';
 const PRE_CACHE = [
   './',
   './index.html',
