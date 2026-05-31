@@ -493,6 +493,18 @@ function renderDash() {
     html += `<div style="font-size:10px;color:var(--sub);margin-top:8px">数据更新于 ${DATA.trending_updated || DATA.updated}</div></div>`;
   }
 
+  html += `<div class="card"><h3>📚 素材库</h3>`;
+  if (DATA.resourceLibrary && DATA.resourceLibrary.files) {
+    DATA.resourceLibrary.files.forEach(f => {
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <span style="font-size:16px">📄</span>
+        <div style="flex:1"><a href="${escapeHtml(f.url || '#')}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;font-size:13px">${escapeHtml(f.name)}</a><br><span style="font-size:10px;color:var(--sub)">${escapeHtml(f.desc)} · ${escapeHtml(f.updateFrequency)}</span></div>
+      </div>`;
+    });
+    html += `<div style="font-size:10px;color:var(--sub);margin-top:6px">📅 更新于 2026-05-31 · 点击在新标签页中查看完整内容</div>`;
+  }
+  html += `</div>`;
+
   html += `<div class="card"><h3>🔧 工具</h3>
     <button id="btn-refresh" class="btn btn-refresh btn-sm">🔄 刷新数据</button>
     <span style="font-size:11px;color:var(--sub);margin-left:8px">重新加载 data.json</span></div>`;

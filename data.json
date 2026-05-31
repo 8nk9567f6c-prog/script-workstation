@@ -843,21 +843,28 @@
   },
   "resourceLibrary": {
     "path": "素材库/",
+    "baseUrl": "https://8nk9567f6c-prog.github.io/script-workstation-v4/素材库/",
     "files": [
       {
         "name": "热梗名梗.md",
         "desc": "2026全网爆款热梗及创作化用指南",
-        "updateFrequency": "每周联网更新"
+        "url": "https://8nk9567f6c-prog.github.io/script-workstation-v4/素材库/热梗名梗.md",
+        "updateFrequency": "每周联网更新",
+        "updated": "2026-05-31"
       },
       {
         "name": "爆款台词.md",
         "desc": "现象级短剧出圈台词分类库（大女主/霸总/复仇/虐恋/男频/海外）",
-        "updateFrequency": "每两周联网更新"
+        "url": "https://8nk9567f6c-prog.github.io/script-workstation-v4/素材库/爆款台词.md",
+        "updateFrequency": "每两周联网更新",
+        "updated": "2026-05-31"
       },
       {
         "name": "名场面.md",
         "desc": "高转化名场面拆解与复用模板",
-        "updateFrequency": "每两周联网更新"
+        "url": "https://8nk9567f6c-prog.github.io/script-workstation-v4/素材库/名场面.md",
+        "updateFrequency": "每两周联网更新",
+        "updated": "2026-05-31"
       }
     ]
   },
