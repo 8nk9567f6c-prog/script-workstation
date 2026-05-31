@@ -235,6 +235,7 @@ mark.search-hit { background: rgba(240,192,96,.35); color: var(--gold); padding:
     <button class="tab" data-tab="flow"><span class="icon">📋</span>工作流</button>
     <button class="tab" data-tab="rules"><span class="icon">📖</span>规则库</button>
     <button class="tab" data-tab="check"><span class="icon">✅</span>自检</button>
+    <button class="tab" data-tab="library"><span class="icon">📚</span>素材库</button>
   </div>
 
   <div class="tab-content" id="tab-content"></div>
@@ -247,6 +248,7 @@ mark.search-hit { background: rgba(240,192,96,.35); color: var(--gold); padding:
   <button class="nav-btn" data-tab="flow"><span class="icon">📋</span>工作流</button>
   <button class="nav-btn" data-tab="rules"><span class="icon">📖</span>规则</button>
   <button class="nav-btn" data-tab="check"><span class="icon">✅</span>自检</button>
+  <button class="nav-btn" data-tab="library"><span class="icon">📚</span>素材库</button>
 </div>
 
 <script>
@@ -257,6 +259,7 @@ function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTi
 // ==================== Global State ====================
 let DATA = null;
 let currentTab = 'dash';
+let currentLib = 'memes';
 let checkState = {};
 let projects = JSON.parse(localStorage.getItem('scripter_projects') || '[]');
 let activeProject = localStorage.getItem('scripter_active') || '';
@@ -380,6 +383,7 @@ function render() {
     case 'flow': html = renderFlow(); break;
     case 'rules': html = renderRules(); break;
     case 'check': html = renderCheck(); break;
+    case 'library': html = renderLibrary(); break;
   }
   c.innerHTML = html;
   bindTabEvents();
@@ -766,6 +770,78 @@ function bindTabEvents() {
   if (btnRetry) btnRetry.addEventListener('click', () => loadData().then(() => render()));
 }
 
+// ==================== Library ====================
+function renderLibrary() {
+  if (!DATA.libraryContent) {
+    return '<div class="card" style="text-align:center"><p>素材库数据加载中...</p></div>';
+  }
+  const LC = DATA.libraryContent;
+  let html = '';
+
+  // Sub-tabs for library
+  const activeLib = currentLib || 'memes';
+  html += `<div class="tabs" style="margin-bottom:12px">
+    <button class="tab${activeLib==='memes'?' active':''}" data-lib="memes">🔥 热梗名梗</button>
+    <button class="tab${activeLib==='quotes'?' active':''}" data-lib="quotes">💬 爆款台词</button>
+    <button class="tab${activeLib==='scenes'?' active':''}" data-lib="scenes">🎬 名场面</button>
+  </div>`;
+
+  const content = LC[activeLib];
+  if (!content) return html + '<div class="card">暂无数据</div>';
+
+  // Source file link
+  const rl = DATA.resourceLibrary;
+  const fileInfo = rl && rl.files ? rl.files.find(f => f.name.includes(activeLib === 'memes' ? '热梗' : activeLib === 'quotes' ? '台词' : '场面')) : null;
+
+  html += `<div class="card"><h3>${content.icon} ${content.title} <span style="font-size:10px;color:var(--sub);font-weight:normal">更新于 ${content.updated}</span></h3>`;
+
+  content.sections.forEach(section => {
+    html += `<div style="margin-bottom:16px">
+      <div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)">${section.name}</div>`;
+
+    section.items.forEach(item => {
+      if (activeLib === 'memes') {
+        html += `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px">${escapeHtml(item.name)}</div>`;
+        if (item.origin) html += `<div style="font-size:11px;color:var(--sub);margin-bottom:3px">📌 ${escapeHtml(item.origin)}</div>`;
+        if (item.data) html += `<div style="font-size:11px;color:var(--accent);margin-bottom:3px">📊 ${escapeHtml(item.data)}</div>`;
+        if (item.usage) html += `<div style="font-size:11px;color:var(--green);margin-bottom:3px">💡 ${escapeHtml(item.usage)}</div>`;
+        html += `</div>`;
+      } else if (activeLib === 'quotes') {
+        html += `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div style="font-size:14px;color:var(--gold);font-style:italic;margin-bottom:2px">"${escapeHtml(item.text)}"</div>
+          <div style="font-size:11px;"><span style="color:var(--accent)">${escapeHtml(item.source || '')}</span>`;
+        if (item.note) html += ` <span style="color:var(--sub)">— ${escapeHtml(item.note)}</span>`;
+        if (item.template) html += ` <span style="display:block;color:var(--green);margin-top:2px">📝 ${escapeHtml(item.template)}</span>`;
+        html += `</div></div>`;
+      } else if (activeLib === 'scenes') {
+        html += `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div style="font-weight:600;font-size:13px;margin-bottom:2px">${escapeHtml(item.name)}</div>`;
+        if (item.source) html += `<div style="font-size:11px;color:var(--accent)">📺 ${escapeHtml(item.source)}</div>`;
+        if (item.episode) html += `<div style="font-size:11px;color:var(--sub)">📍 ${escapeHtml(item.episode)}</div>`;
+        if (item.data) html += `<div style="font-size:11px;color:var(--accent);margin-top:2px">📊 ${escapeHtml(item.data)}</div>`;
+        if (item.structure) html += `<div style="font-size:11px;color:var(--green);margin-top:3px">🔧 结构：${escapeHtml(item.structure)}</div>`;
+        if (item.why) html += `<div style="font-size:11px;color:var(--gold);margin-top:2px">⭐ 为什么爆：${escapeHtml(item.why)}</div>`;
+        if (item.template) html += `<div style="font-size:11px;color:var(--green);margin-top:2px">💡 复用模板：${escapeHtml(item.template)}</div>`;
+        if (item.desc) html += `<div style="font-size:11px;color:var(--sub);margin-top:2px">${escapeHtml(item.desc)}</div>`;
+        html += `</div>`;
+      }
+    });
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+
+  // Link to full markdown file
+  if (fileInfo && fileInfo.url) {
+    html += `<div class="card" style="text-align:center;font-size:11px;color:var(--sub)">
+      📄 <a href="${escapeHtml(fileInfo.url)}" target="_blank" rel="noopener" style="color:var(--accent)">查看完整 ${content.title} 文档 →</a>
+    </div>`;
+  }
+
+  return html;
+}
+
 // ==================== Global Event Delegation ====================
 document.getElementById('app').addEventListener('click', function(e) {
   // Tab clicks
@@ -779,6 +855,16 @@ document.getElementById('app').addEventListener('click', function(e) {
     const item = checkItem.dataset.item;
     checkState[item] = !checkState[item];
     saveChecksSilent();
+    render();
+    return;
+  }
+
+  // Library sub-tabs
+  const libTab = e.target.closest('[data-lib]');
+  if (libTab) {
+    currentLib = libTab.dataset.lib;
+    document.querySelectorAll('[data-lib]').forEach(t => t.classList.remove('active'));
+    libTab.classList.add('active');
     render();
     return;
   }
